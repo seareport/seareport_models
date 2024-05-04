@@ -1,9 +1,11 @@
+import matplotlib.pyplot as plt
 import pyposeidon.model as pm
 import geopandas as gp
 import pandas as pd
 import logging
 import xarray as xr
 from pyposeidon.telemac import flip
+import os
 import numpy as np
 
 # Configure logging
@@ -32,6 +34,21 @@ def is_overlapping(tris, meshx):
         # fmt: on
     )
     return condition
+
+
+def plot_mesh(slf):
+    m = xr.open_dataset(slf, engine="selafin")
+    x, y, z = m.x.values, m.y.values, m["B"].values[0]
+    tri3 = m.attrs["ikle2"] - 1
+    m = is_overlapping(tri3, x)  # get new arrays
+    fig, ax = plt.subplots(figsize=(40, 20))
+    ax.tripcolor(x, y, z, edgecolors="black", triangles=tri3[~m], lw=0.08)
+    ax.set_xlim([min(x), max(x)])
+    ax.set_ylim([min(y), max(y)])
+    ax.set_aspect("equal", adjustable="box")
+    ax.axis("off")
+    fig.savefig(slf.replace(".slf", ".png"), dpi=700, bbox_inches="tight", pad_inches=0)
+    plt.show()
 
 
 def fix_mesh(b):
@@ -87,6 +104,7 @@ def main(mesh: bool = True, model: bool = True):
         "solver_name": "telemac",
         "start_date": "2023-7-1 0:0:0",
         "end_date": "2023-7-1 23:0:0",
+        # "meteo_source": wind,  # path to meteo files
         "meteo_input360": True,  # if meteo files longitudes go from from 0 to 360
         "monitor": True,  # get time series for observation points
         # "obs": seaset_path,
@@ -117,7 +135,9 @@ def main(mesh: bool = True, model: bool = True):
             model["mesh_file"] = mesh_file
             model["rpath"] = rpath
             model["solver_name"] = solver
-            model["coastlines"] = None  # skip this step, we don't need coastlines
+            model["coastlines"] = (
+                None  # skip this step, we don't need coastlines anymore
+            )
             model["obs"] = seaset_path  # apply obs only to export "station.in" file
             model["update"] = ["model"]
             b = pm.set(**model)
@@ -127,7 +147,9 @@ def main(mesh: bool = True, model: bool = True):
             b.mesh.to_file("v0/schism/hgrid.gr3")
             b.save()
             b.set_obs()
+            if solver == "telemac":
+                plot_mesh(os.path.join(rpath, "geo.slf"))
 
 
 if __name__ == "__main__":
-    main()
+    main(mesh=False)

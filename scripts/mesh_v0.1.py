@@ -4,8 +4,6 @@ import pandas as pd
 import logging
 import xarray as xr
 from pyposeidon.telemac import flip
-import os
-import glob
 import numpy as np
 
 # Configure logging
@@ -22,6 +20,7 @@ def center_pole(x, y):
     x[idx] = 0
     return x
 
+
 def is_overlapping(tris, meshx):
     PIR = 180
     x1, x2, x3 = meshx[tris].T
@@ -35,14 +34,16 @@ def is_overlapping(tris, meshx):
     return condition
 
 
-def fix_mesh(b): 
+def fix_mesh(b):
     tri = b.mesh.Dataset.SCHISM_hgrid_face_nodes
     x = b.mesh.Dataset.SCHISM_hgrid_node_x
     y = b.mesh.Dataset.SCHISM_hgrid_node_y
     x = center_pole(x, y)
     m = is_overlapping(tri, x)
     tri[m] = flip(tri[m])
-    b.mesh.Dataset["SCHISM_hgrid_face_nodes"] = xr.Variable(('nSCHISM_hgrid_face', 'nMaxSCHISM_hgrid_face_nodes'), tri)
+    b.mesh.Dataset["SCHISM_hgrid_face_nodes"] = xr.Variable(
+        ("nSCHISM_hgrid_face", "nMaxSCHISM_hgrid_face_nodes"), tri
+    )
 
 
 def main(mesh: bool = True, model: bool = True):
@@ -52,17 +53,16 @@ def main(mesh: bool = True, model: bool = True):
     res_max = res_min * 10
     cbuffer = res_min / 10
     # Folders and files for mesh generation
-    wind = glob.glob("/home/tomsail/Documents/work/python/pyPoseidon/Tutorial/data/era5_202307_uvp.nc")
-    seaset_path = 'v0.1/seaset_full.csv'
+    seaset_path = "v0.1/seaset_full.csv"
     seaset_full = pd.read_csv(
-        'https://raw.githubusercontent.com/tomsail/seaset/2176a61197d136121878a5412f39e3351d646af5/Notebooks/catalog_full.csv', 
-        index_col=0
+        "https://raw.githubusercontent.com/tomsail/seaset/2176a61197d136121878a5412f39e3351d646af5/Notebooks/catalog_full.csv",
+        index_col=0,
     ).to_csv(seaset_path)
     gshhs_folder = "../coastlines/out/"
     fdem = "/home/tomsail/Documents/work/python/pyPoseidon/Tutorial/data/ETOPO_0.03.nc"
     coasts = gp.read_parquet(gshhs_folder + f"gshhg_{resolution}_nosea.parquet")
-    # 
-    rpath = 'v0.1'
+    #
+    rpath = "v0.1"
     model = {
         # "type": "tri2d",
         "coastlines": coasts,
@@ -82,11 +82,9 @@ def main(mesh: bool = True, model: bool = True):
         "plot": False,
         "rpath": rpath,
         # model
-        "solver_name": 'telemac',
+        "solver_name": "telemac",
         "start_date": "2023-7-1 0:0:0",
         "end_date": "2023-7-1 23:0:0",
-        # "meteo_source": wind,  # path to meteo files
-        "meteo_input360": True,  # if meteo files longitudes go from from 0 to 360
         "monitor": True,  # get time series for observation points
         # "obs": seaset_path,
         "update": ["dem"],
@@ -112,13 +110,13 @@ def main(mesh: bool = True, model: bool = True):
     # second step --- run model
     if model:
         for solver in ["schism", "telemac"]:
-            rpath = 'v0.1/' + solver
+            rpath = "v0.1/" + solver
             model["mesh_file"] = mesh_file
             model["rpath"] = rpath
             model["solver_name"] = solver
-            model["coastlines"] = None # skip this step, we don't need coastlines anymore
-            model['obs'] = seaset_path # apply obs only to export "station.in" file 
-            model["update"]= ["model"]
+            model["coastlines"] = None  # skip this step, we don't need coastlines
+            model["obs"] = seaset_path  # apply obs only to export "station.in" file
+            model["update"] = ["model"]
             b = pm.set(**model)
             b.create()
             b.output()
@@ -126,6 +124,7 @@ def main(mesh: bool = True, model: bool = True):
             b.mesh.to_file("v0.1/schism/hgrid.gr3")
             b.save()
             b.set_obs()
+
 
 if __name__ == "__main__":
     main()
