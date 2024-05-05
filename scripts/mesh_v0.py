@@ -61,7 +61,7 @@ def main(mesh: bool = True, model: bool = True):
         index_col=0,
     ).to_csv(seaset_path)
     gshhs_folder = "../coastlines/out/"
-    fdem = "/home/tomsail/Documents/work/python/pyPoseidon/Tutorial/data/ETOPO_0.03.nc"
+    fdem = "00_bathy/etopo/ETOPO_0.03.nc"
     coasts = gp.read_parquet(gshhs_folder + f"gshhg_{resolution}_nosea.parquet")
     #
     rpath = "v0"
