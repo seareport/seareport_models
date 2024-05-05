@@ -581,13 +581,13 @@ test = ["pandas[test]", "pre-commit", "pytest", "pytest-cov", "pytest-rerunfailu
 
 [[package]]
 name = "dataretrieval"
-version = "1.0.7"
+version = "1.0.8"
 description = "Discover and retrieve water data from U.S. federal hydrologic web services."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "dataretrieval-1.0.7-py3-none-any.whl", hash = "sha256:b5053e6b45be590659474f1b0e3f6e9658f85db5499c406a48d260f74a5bd190"},
-    {file = "dataretrieval-1.0.7.tar.gz", hash = "sha256:5d9a0db317b6fa420dcffccaba1abf78660ea35b990628ae315f92c8da88f8cb"},
+    {file = "dataretrieval-1.0.8-py3-none-any.whl", hash = "sha256:fb5060a54ff8544ec544e8ec000758477a891b7e250bc08a2f9d1f2227cb266f"},
+    {file = "dataretrieval-1.0.8.tar.gz", hash = "sha256:a6d407dc79ed07becb33996c88fb2ef2d9722a0a22299928266f50cd2ed8a523"},
 ]
 
 [package.dependencies]
@@ -595,7 +595,7 @@ pandas = "==2.*"
 requests = "*"
 
 [package.extras]
-doc = ["nbsphinx", "nbsphinx-link", "sphinx", "sphinx-rtd-theme"]
+doc = ["ipykernel", "ipython", "matplotlib", "nbsphinx", "nbsphinx-link", "sphinx", "sphinx-rtd-theme"]
 nldi = ["geopandas (>=0.10)"]
 test = ["coverage", "flake8", "pytest (>5.0.0)", "pytest-cov[all]", "requests-mock"]
 
@@ -1110,13 +1110,13 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "joblib"
-version = "1.4.0"
+version = "1.4.2"
 description = "Lightweight pipelining with Python functions"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "joblib-1.4.0-py3-none-any.whl", hash = "sha256:42942470d4062537be4d54c83511186da1fc14ba354961a2114da91efa9a4ed7"},
-    {file = "joblib-1.4.0.tar.gz", hash = "sha256:1eb0dc091919cd384490de890cb5dfd538410a6d4b3b54eef09fb8c50b409b1c"},
+    {file = "joblib-1.4.2-py3-none-any.whl", hash = "sha256:06d478d5674cbc267e7496a410ee875abd68e4340feff4490bcb7afb88060ae6"},
+    {file = "joblib-1.4.2.tar.gz", hash = "sha256:2382c5816b2636fbd20a09e0f4e9dad4736765fdfb7dca582943b9c1366b3f0e"},
 ]
 
 [[package]]
@@ -2429,8 +2429,8 @@ viz = ["geoviews[recommended]", "holoviews", "hvplot", "ipykernel", "itkwidgets"
 [package.source]
 type = "git"
 url = "https://github.com/tomsail/pyPoseidon.git"
-reference = "9efad3f1a27609f17a18190d15f9fb960fa0042b"
-resolved_reference = "9efad3f1a27609f17a18190d15f9fb960fa0042b"
+reference = "952f2edc3c3e5582399210a604ca6e0653088185"
+resolved_reference = "952f2edc3c3e5582399210a604ca6e0653088185"
 
 [[package]]
 name = "pyproj"
@@ -3106,13 +3106,13 @@ files = [
 
 [[package]]
 name = "tqdm"
-version = "4.66.2"
+version = "4.66.4"
 description = "Fast, Extensible Progress Meter"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "tqdm-4.66.2-py3-none-any.whl", hash = "sha256:1ee4f8a893eb9bef51c6e35730cebf234d5d0b6bd112b0271e10ed7c24a02bd9"},
-    {file = "tqdm-4.66.2.tar.gz", hash = "sha256:6cd52cdf0fef0e0f543299cfc96fec90d7b8a7e88745f411ec33eb44d5ed3531"},
+    {file = "tqdm-4.66.4-py3-none-any.whl", hash = "sha256:b75ca56b413b030bc3f00af51fd2c1a1a5eac6a0c1cca83cbb37a5c52abce644"},
+    {file = "tqdm-4.66.4.tar.gz", hash = "sha256:e4d936c9de8727928f3be6079590e97d9abfe8d39a590be678eb5919ffc186bb"},
 ]
 
 [package.dependencies]
@@ -3354,4 +3354,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9, <4"
-content-hash = "db943ff4657ba1c0a30f2be171a430987f97f9b7b0eb99ddce03fde65c903a7a"
+content-hash = "98543a42e08a35a8b3d4a7509ec3fa0ec341ef75757a08f5d4cd5c9bae686a78"

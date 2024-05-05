@@ -10,5 +10,5 @@ authors = [
 
 [tool.poetry.dependencies]
 python = ">=3.9, <4"
-pyposeidon = {git = "https://github.com/tomsail/pyPoseidon.git", rev = "9efad3f1a27609f17a18190d15f9fb960fa0042b"}
+pyposeidon = {git = "https://github.com/tomsail/pyPoseidon.git", rev = "952f2edc3c3e5582399210a604ca6e0653088185"}
 pyarrow = "*"
