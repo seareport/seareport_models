@@ -1,1 +1,14 @@
-../v0/pyproject.toml
+[tool.poetry]
+name = "seareports_meshes"
+version = "0.1.0"
+description = "Library to reproduce the meshes used for seareport project"
+authors = [
+    "George Breyiannis <breyiannis@gmail.com>",
+    "Panos Mavrogiorgos <pmav99@gmail.com>",
+    "Thomas Saillour <saillour.thomas@gmail.com>"
+]
+
+[tool.poetry.dependencies]
+python = ">=3.9, <4"
+pyposeidon = {git = "https://github.com/tomsail/pyPoseidon.git", rev = "952f2edc3c3e5582399210a604ca6e0653088185"}
+pyarrow = "*"

@@ -1,1 +1,17 @@
-../v0/binary-om-telemac-openmpi-p3.11.yml
+channels:
+  - conda-forge
+  - gbrey
+  - tomsail
+dependencies:
+  - compilers
+  - eccodes
+  - ffmpeg
+  - gdal
+  - cgal
+  - geos
+  - gmsh>=4.9.3
+  - jigsaw>=0.9.12
+  - opentelemac=main*=openmpi*
+  - pip
+  - proj
+  - python=3.11
