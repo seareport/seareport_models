@@ -34,15 +34,26 @@ def is_overlapping(tris, meshx):
     return condition
 
 
-def fix_mesh(b):
+def flip(tris):
+    return np.column_stack((tris[:, 2], tris[:, 1], tris[:, 0]))
+
+
+def fix_mesh(b, corrections = None):
     tri = b.mesh.Dataset.SCHISM_hgrid_face_nodes
     x = b.mesh.Dataset.SCHISM_hgrid_node_x
     y = b.mesh.Dataset.SCHISM_hgrid_node_y
     x = center_pole(x, y)
     m = is_overlapping(tri, x)
     tri[m] = flip(tri[m])
+    rem_mask = np.zeros(len(tri), dtype=bool)
+    # manual additional corrections
+    if corrections is not None:
+        for rev in corrections["reverse"]:
+            tri[rev : rev + 1] = flip(tri[rev : rev + 1])
+        for rem in corrections["remove"]:
+            rem_mask[rem] = True
     b.mesh.Dataset["SCHISM_hgrid_face_nodes"] = xr.Variable(
-        ("nSCHISM_hgrid_face", "nMaxSCHISM_hgrid_face_nodes"), tri
+        ("nSCHISM_hgrid_face", "nMaxSCHISM_hgrid_face_nodes"), tri[~rem_mask, :]
     )
 
 
@@ -120,7 +131,8 @@ def main(mesh: bool = True, model: bool = True):
             b = pm.set(**model)
             b.create()
             b.output()
-            fix_mesh(b)
+            corr = {"reverse": [4], "remove": []}
+            fix_mesh(b, corrections=corr)
             b.mesh.to_file("v1.2/schism/hgrid.gr3")
             b.save()
             b.set_obs()
