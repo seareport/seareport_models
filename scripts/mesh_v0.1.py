@@ -46,7 +46,7 @@ def fix_mesh(b):
     )
 
 
-def main(mesh: bool = True, model: bool = True):
+def main(mesh: bool = False, model: bool = True):
     # general meshing settings (oceanmesh settings below)
     resolution = "h"
     res_min = 0.2
@@ -121,7 +121,7 @@ def main(mesh: bool = True, model: bool = True):
             b.create()
             b.output()
             fix_mesh(b)
-            b.mesh.to_file("v0.1/schism/hgrid.gr3")
+            b.mesh.to_file(f"v0.1/{solver}/hgrid.gr3")
             b.save()
             b.set_obs()
 

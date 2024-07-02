@@ -70,7 +70,7 @@ def main(mesh: bool = True, model: bool = True):
         index_col=0,
     ).to_csv(seaset_path)
     gshhs_folder = "../coastlines/out/"
-    fdem = "ETOPO_0.03.nc"
+    fdem = "00_bathy/etopo/ETOPO_0.03.nc"
     coasts = gp.read_parquet(gshhs_folder + f"gshhg_{resolution}.parquet")
     #
     rpath = "v1.2"
@@ -139,4 +139,4 @@ def main(mesh: bool = True, model: bool = True):
 
 
 if __name__ == "__main__":
-    main(mesh=False)
+    main(mesh=True)

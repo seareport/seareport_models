@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "seareports_meshes"
+version = "0.1.0"
+description = "Library to reproduce the meshes used for seareport project"
+authors = [
+    "George Breyiannis <breyiannis@gmail.com>",
+    "Panos Mavrogiorgos <pmav99@gmail.com>",
+    "Thomas Saillour <saillour.thomas@gmail.com>"
+]
+
+[tool.poetry.dependencies]
+python = ">=3.9, <4"
+pyposeidon = {git = "https://github.com/tomsail/pyPoseidon.git", rev = "88e2a67bed3b6e49721c4481ffb6047167cab107"}
+pyarrow = "*"
+fiona = "^1.9.6"
