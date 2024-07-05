@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "seareports_meshes"
+name = "seareports_models"
 version = "0.1.0"
 description = "Library to reproduce the meshes used for seareport project"
 authors = [
@@ -10,6 +10,6 @@ authors = [
 
 [tool.poetry.dependencies]
 python = ">=3.9, <4"
-fiona = "*"
-pyposeidon = {git = "https://github.com/tomsail/pyPoseidon.git", rev = "88e2a67bed3b6e49721c4481ffb6047167cab107"}
+pyposeidon = {git = "https://github.com/tomsail/pyPoseidon.git", rev = "15d94990a9397cd5be8503bc9cf8aab5c3e854c7"}
 pyarrow = "*"
+fiona = "*"
