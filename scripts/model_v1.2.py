@@ -147,6 +147,7 @@ def main(mesh: bool = True, model: bool = True, results=True):
         "monitor": True,  # get time series for observation points
         # "obs": seaset_path,
         "update": ["dem"],
+        "fortran": "./scripts/temp_fortran/out_history.F90", # can be a file or a folder
         "parameters": {
             "dt": 400,
             "chezy": 30,
@@ -184,9 +185,12 @@ def main(mesh: bool = True, model: bool = True, results=True):
             b = pm.set(**MODEL)
             b.create()
             b.output()
-            corr = {"reverse": [4], "remove": []}  # this fix is for schism
+            if solver == "schism":
+                corr = {"reverse": [4], "remove": []}  # this fix is for schism
+            else:
+                corr = None
             fix_mesh(b, corrections=corr)
-            b.mesh.to_file("v1.2/schism/hgrid.gr3")
+            b.mesh.to_file(f"v1.2/{solver}/hgrid.gr3")
             b.save()
             b.set_obs()
             b.run()

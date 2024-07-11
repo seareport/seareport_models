@@ -136,6 +136,7 @@ def main(mesh: bool = True, model: bool = True, results=True):
         "monitor": True,  # get time series for observation points
         # "obs": seaset_path,
         "update": ["dem"],
+        "fortran": "./scripts/temp_fortran/out_history.F90", # can be a file or a folder
         "parameters": {
             "dt": 400,
             "chezy": 30,
@@ -174,7 +175,7 @@ def main(mesh: bool = True, model: bool = True, results=True):
             b.create()
             b.output()
             fix_mesh(b)
-            b.mesh.to_file("v2.2/schism/hgrid.gr3")
+            b.mesh.to_file(f"v2.2/{solver}/hgrid.gr3")
             b.save()
             b.set_obs()
             b.run()
