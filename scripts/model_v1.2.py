@@ -77,10 +77,7 @@ def get_meta() -> gp.GeoDataFrame:
         meta_api[["ioc_code", "lon", "lat"]].drop_duplicates(),
         on=["ioc_code"],
     )
-    updated = merged.assign(
-        geometry=gp.points_from_xy(merged.lon, merged.lat, crs="EPSG:4326")
-    )
-    return updated
+    return merged.drop(columns=["geometry"])
 
 
 def ioc_subset_from_files_in_folder(
@@ -170,7 +167,7 @@ def main(mesh: bool = True, model: bool = True, results=True):
     # second step --- run model
     if model:
         for solver in ["schism", "telemac"]:
-            rpath = "v1.2/" + solver
+            rpath = f"v1.2/{solver}"
             MODEL["mesh_file"] = mesh_file
             MODEL["rpath"] = rpath
             MODEL["solver_name"] = solver
@@ -198,7 +195,7 @@ def main(mesh: bool = True, model: bool = True, results=True):
     # third step --- extract results
     if results:
         for solver in ["telemac"]:  # schism not tested
-            MODEL["rpath"] = "v1.2/" + solver
+            MODEL["rpath"] = f"v1.2/{solver}"
             MODEL["solver_name"] = solver
             MODEL["result_type"] = "2D"
             MODEL["convert_results"] = True
