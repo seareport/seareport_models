@@ -183,7 +183,7 @@ def main(mesh: bool = True, model: bool = True, results=True):
             b.create()
             b.output()
             if solver == "schism":
-                corr = {"reverse": [4], "remove": []}  # this fix is for schism
+                corr = {"reverse": [2], "remove": []}  # this fix is for schism
             else:
                 corr = None
             fix_mesh(b, corrections=corr)
