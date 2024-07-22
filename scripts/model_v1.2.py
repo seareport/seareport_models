@@ -80,18 +80,25 @@ def get_meta() -> gp.GeoDataFrame:
     return merged.drop(columns=["geometry"])
 
 
-def ioc_subset_from_files_in_folder(
-    df: pd.DataFrame, folder: str, ext: str = ".parquet"
-):
-    """this function return a subset of the ioc database from all the files (json or parquet)
-    present in a folder
-    """
-    list_files = []
-    for file in os.listdir(folder):
-        name = file.split(ext)[0]
-        if file.endswith(ext):
-            list_files.append(name)
-    return df[df.ioc_code.isin(list_files)]
+def get_STOFS():
+    mycols = [str(i) for i in range(6)]  # we expect 17 cols max in that file
+    stof2d = pd.read_csv(
+        "https://polar.ncep.noaa.gov/stofs/data/stofs_2d_glo_elev_stat_v2_1_0",
+        names=mycols,
+        sep="\t+|!",
+        header=None,
+        skiprows=1,
+    )
+    stof2d["Info"] = stof2d.apply(lambda row: " ".join(filter(None, row[2:])), axis=1)
+    stof2d["ID"] = stof2d["Info"].apply(lambda x: " ".join(x.split()[:3]))
+    stof2d["Info"] = stof2d.apply(
+        lambda row: row["Info"].replace(row["ID"], "").strip(), axis=1
+    )
+    stof2d = stof2d.drop(columns=["2", "3", "4", "5"])
+    stof2d.rename(columns={"0": "lon", "1": "lat"}, inplace=True)
+    stof2d["is_satellite"] = stof2d.apply(lambda row: "SA" in row["ID"], axis=1)
+    stof2d["is_ioc"] = False
+    return stof2d
 
 
 YEAR = 2023
@@ -107,10 +114,17 @@ def main(mesh: bool = True, model: bool = True, results=True):
     res_max = 2
     cbuffer = res_min / 10
     # obs
-    obs_path = "v1.2/ioc_.csv"
+    obs_path = "v1.2/ioc_stofs.csv"
     ioc_ = get_meta()
-    ioc_cleanup = ioc_subset_from_files_in_folder(ioc_, "../ioc_cleanup/clean/")
-    ioc_cleanup.to_csv(obs_path)
+    ioc_["is_ioc"] = True
+    ioc_["is_satellite"] = False
+    stof2d = get_STOFS()
+    m = pd.merge(stof2d, ioc_, on=["lon", "lat"], how="outer")
+    m["is_ioc"] = m["is_ioc_x"].fillna(m["is_ioc_y"])
+    m["is_satellite"] = m["is_satellite_x"].fillna(m["is_satellite_y"])
+    m = m.drop(columns=["is_ioc_x", "is_ioc_y", "is_satellite_x", "is_satellite_y"])
+    m["id"] = m["ID"].fillna(m["ioc_code"])
+    m.to_csv(obs_path)
     # Folders and files for mesh generation
     gshhs_folder = "../coastlines/out/"
     fdem = "00_bathy/etopo/ETOPO_0.03.nc"
@@ -144,7 +158,7 @@ def main(mesh: bool = True, model: bool = True, results=True):
         "monitor": True,  # get time series for observation points
         # "obs": seaset_path,
         "update": ["dem"],
-        "fortran": "./scripts/temp_fortran/out_history.F90", # can be a file or a folder
+        "fortran": "./scripts/temp_fortran/out_history.F90",  # can be a file or a folder
         "parameters": {
             "dt": 400,
             "chezy": 30,
@@ -173,6 +187,7 @@ def main(mesh: bool = True, model: bool = True, results=True):
             MODEL["solver_name"] = solver
             MODEL["coastlines"] = None  # skip this step, we don't need coastlines
             MODEL["obs"] = obs_path  # apply obs only to export "station.in" file
+            MODEL["id_str"] = "id"
             MODEL["update"] = ["model"]
             meteo = pmeteo.Meteo(WIND)
             meteo.Dataset = meteo.Dataset.sel(
