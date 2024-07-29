@@ -105,16 +105,16 @@ def get_STOFS():
 
 
 YEAR = 2022
-V = "v2.2"
+V = "v0.4"
 PROJECT = ""
 WIND = glob.glob(PROJECT + f"02_meteo/era5/lon_lat/netcdf/{YEAR}*.nc")
 WIND += glob.glob(PROJECT + f"02_meteo/era5/lon_lat/netcdf/{YEAR+1}*.nc")
 
 
-def main(mesh: bool = True, model: bool = True, results=True):
+def main(mesh: bool = True, model: bool = True, results=False):
     # general meshing settings (oceanmesh settings below)
-    resolution = "f"
-    res_min = 0.03
+    resolution = "i"
+    res_min = 0.2
     res_max = 2
     cbuffer = res_min / 10
     # obs
@@ -151,10 +151,12 @@ def main(mesh: bool = True, model: bool = True, results=True):
         "bathy_gradient": True,
         "alpha_wavelength": 50,  # number of element to resolve WL
         "alpha_slope": 10,  # number of element to resolve bathy gradient
+        "polar_circle": 2,  # radius of the polar circle
         "plot": False,
         "rpath": rpath,
         # model
         "solver_name": "telemac",
+        "module": "telemac3d",
         "start_date": f"{YEAR}-1-1 0:0:0",
         "end_date": f"{YEAR+1}-1-1 0:0:0",
         "meteo_input360": True,  # if meteo files longitudes go from from 0 to 360
@@ -177,7 +179,7 @@ def main(mesh: bool = True, model: bool = True, results=True):
     }
 
     # first step --- create mesh
-    mesh_file = rpath + f"/GSHHS_{resolution}_{res_min}.gr3"
+    mesh_file = rpath + f"/GSHHS_{resolution}_{res_min}_3D.gr3"
     if mesh:
         b = pm.set(**MODEL)
         b.create()
@@ -185,7 +187,7 @@ def main(mesh: bool = True, model: bool = True, results=True):
 
     # second step --- run model
     if model:
-        for solver in ["schism", "telemac"]:
+        for solver in ["telemac"]:
             rpath = f"{PROJECT}{V}/{solver}/{YEAR}"
             MODEL["mesh_file"] = mesh_file
             MODEL["rpath"] = rpath

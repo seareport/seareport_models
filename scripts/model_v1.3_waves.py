@@ -80,43 +80,58 @@ def get_meta() -> gp.GeoDataFrame:
     return merged.drop(columns=["geometry"])
 
 
-def ioc_subset_from_files_in_folder(
-    df: pd.DataFrame, folder: str, ext: str = ".parquet"
-):
-    """this function return a subset of the ioc database from all the files (json or parquet)
-    present in a folder
-    """
-    list_files = []
-    for file in os.listdir(folder):
-        name = file.split(ext)[0]
-        if file.endswith(ext):
-            list_files.append(name)
-    return df[df.ioc_code.isin(list_files)]
+def get_STOFS():
+    mycols = [str(i) for i in range(6)]  # we expect 17 cols max in that file
+    stof2d = pd.read_csv(
+        "https://polar.ncep.noaa.gov/stofs/data/stofs_2d_glo_elev_stat_v2_1_0",
+        names=mycols,
+        sep="\t+|!",
+        header=None,
+        skiprows=1,
+    )
+    stof2d["Info"] = stof2d.apply(lambda row: " ".join(filter(None, row[2:])), axis=1)
+    stof2d["ID"] = stof2d["Info"].apply(lambda x: " ".join(x.split()[:3]))
+    stof2d["Info"] = stof2d.apply(
+        lambda row: row["Info"].replace(row["ID"], "").strip(), axis=1
+    )
+    stof2d = stof2d.drop(columns=["2", "3", "4", "5"])
+    stof2d.rename(columns={"0": "lon", "1": "lat"}, inplace=True)
+    stof2d["is_satellite"] = stof2d.apply(lambda row: "SA" in row["ID"], axis=1)
+    stof2d["is_ioc"] = False
+    return stof2d
 
 
-YEAR = 2023
+YEAR = 2022
+V = "v1.3"
 PROJECT = ""
 WIND = glob.glob(PROJECT + f"02_meteo/era5/lon_lat/netcdf/{YEAR}*.nc")
 WIND += glob.glob(PROJECT + f"02_meteo/era5/lon_lat/netcdf/{YEAR+1}*.nc")
 
 
-def main(mesh: bool = True, model: bool = False, results=False):
+def main(mesh: bool = True, model: bool = True, results=False):
     # general meshing settings (oceanmesh settings below)
     resolution = "f"
     res_min = 0.06
     res_max = 2
     cbuffer = res_min / 10
     # obs
-    obs_path = "v1.2/ioc_.csv"
+    obs_path = PROJECT + f"{V}/ioc_stofs.csv"
     ioc_ = get_meta()
-    ioc_cleanup = ioc_subset_from_files_in_folder(ioc_, "../ioc_cleanup/clean/")
-    ioc_cleanup.to_csv(obs_path)
+    ioc_["is_ioc"] = True
+    ioc_["is_satellite"] = False
+    stof2d = get_STOFS()
+    m = pd.merge(stof2d, ioc_, on=["lon", "lat"], how="outer")
+    m["is_ioc"] = m["is_ioc_x"].fillna(m["is_ioc_y"])
+    m["is_satellite"] = m["is_satellite_x"].fillna(m["is_satellite_y"])
+    m = m.drop(columns=["is_ioc_x", "is_ioc_y", "is_satellite_x", "is_satellite_y"])
+    m["id"] = m["ID"].fillna(m["ioc_code"])
+    m.to_csv(obs_path)
     # Folders and files for mesh generation
-    gshhs_folder = "../coastlines/out/"
-    fdem = "00_bathy/etopo/ETOPO_0.03.nc"
+    gshhs_folder = PROJECT + "01_coastlines/gshhs/out/"
+    fdem = PROJECT + "00_bathy/etopo/ETOPO_0.03.nc"
     coasts = gp.read_parquet(gshhs_folder + f"gshhg_{resolution}.parquet")
     #
-    rpath = "v1.2"
+    rpath = PROJECT + f"{V}"
     MODEL = {
         # "type": "tri2d",
         "coastlines": coasts,
@@ -129,20 +144,21 @@ def main(mesh: bool = True, model: bool = False, results=False):
         "resolution_max": res_max,
         # oceanmesh settings
         "grad": 0.12,
-        "iterations": 100,
+        "iterations": 200,
         "bathy_gradient": False,
         "alpha_wavelength": 50,  # number of element to resolve WL
         "alpha_slope": 10,  # number of element to resolve bathy gradient
-        "polar_circle": 2, # radius of the polar circle
+        "polar_circle": 2,  # radius of the polar circle
         "plot": False,
         "rpath": rpath,
         # model
         "solver_name": "telemac",
         "module": "tomawac",
-        "start_date": "2023-7-1 0:0:0",
-        "end_date": "2023-7-02 23:0:0",
+        "start_date": f"{YEAR}-1-1 0:0:0",
+        "end_date": f"{YEAR+1}-1-1 0:0:0",
         "meteo_input360": True,  # if meteo files longitudes go from from 0 to 360
         "meteo_source": None,  # path to meteo files
+        # "meteo_gtype": "tri",  # for O1280 meshes
         "monitor": True,  # get time series for observation points
         # "obs": seaset_path,
         "update": ["dem"],
@@ -160,7 +176,7 @@ def main(mesh: bool = True, model: bool = False, results=False):
     }
 
     # first step --- create mesh
-    mesh_file = rpath + f"/GSHHS_{resolution}_{res_min}.gr3"
+    mesh_file = rpath + f"/GSHHS_{resolution}_{res_min}_waves.gr3"
     if mesh:
         b = pm.set(**MODEL)
         b.create()
@@ -169,27 +185,25 @@ def main(mesh: bool = True, model: bool = False, results=False):
     # second step --- run model
     if model:
         for solver in ["telemac"]:
-            rpath = f"v1.2/{solver}"
+            rpath = f"{PROJECT}{V}/{solver}/{YEAR}"
             MODEL["mesh_file"] = mesh_file
             MODEL["rpath"] = rpath
             MODEL["solver_name"] = solver
             MODEL["coastlines"] = None  # skip this step, we don't need coastlines
             MODEL["obs"] = obs_path  # apply obs only to export "station.in" file
+            MODEL["id_str"] = "id"
             MODEL["update"] = ["model"]
-            meteo = pmeteo.Meteo(WIND)
+            ds = xr.open_mfdataset(WIND)
+            meteo = pmeteo.Meteo(ds)
             meteo.Dataset = meteo.Dataset.sel(
                 time=slice(MODEL["start_date"], MODEL["end_date"])
-            )
-            # MODEL["meteo_source"] = meteo
+            ).drop_vars(["valid_time"])
+            MODEL["meteo_source"] = meteo
             b = pm.set(**MODEL)
             b.create()
             b.output()
-            if solver == "schism":
-                corr = {"reverse": [2], "remove": []}  # this fix is for schism
-            else:
-                corr = None
-            fix_mesh(b, corrections=corr)
-            b.mesh.to_file(f"v1.2/{solver}/hgrid.gr3")
+            fix_mesh(b)
+            b.mesh.to_file(f"{rpath}/hgrid.gr3")
             b.save()
             b.set_obs()
             b.run()
@@ -197,11 +211,15 @@ def main(mesh: bool = True, model: bool = False, results=False):
     # third step --- extract results
     if results:
         for solver in ["telemac"]:  # schism not tested
-            MODEL["rpath"] = f"v1.2/{solver}"
+            MODEL["rpath"] = PROJECT + f"01_obs/model/{V}/"
+            os.makedirs(MODEL["rpath"], exist_ok=True)
             MODEL["solver_name"] = solver
             MODEL["result_type"] = "2D"
-            MODEL["convert_results"] = True
+            MODEL["convert_results"] = False
             MODEL["extract_TS"] = True
+            folders = glob.glob(f"{PROJECT}{V}/{solver}/{YEAR}")
+            folders += glob.glob(f"{PROJECT}{V}/{solver}/{YEAR + 1}")
+            MODEL["folders"] = folders
             res = data.get_output(**MODEL)
 
 

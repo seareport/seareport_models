@@ -4,7 +4,24 @@ Concept: Build reproducible models in 3 steps:
  2. `model`: reproduce the model
  3. `results`: reproduce the results data extraction (2D and 1D Time Series)
 
-## 1 - Installl
+Example: Using `scripts/model_v2.2.py`, you can produce this 3km global mesh and model metocean data
+![world_2.2](./assets/v2.2.png)
+
+## current meshes/models available
+
+| Mesh version | resolution | hole in the north pole | bathy gradient | other              | model application |
+|--------------|------------|------------------------|----------------|--------------------|-------------------|
+| `v0.0`       | 50km       |         :x:            |      yes       |         -          |        2D         |
+| `v0.1`       | 20km       |         :x:            |      yes       |         -          |        2D         |
+| `v0.2`       | 20km       |         :x:            |      yes       |  max depth at -20m |        2D         |
+| `v0.3`       | 20km       |         yes            |      :x:       |         -          |      waves        |
+| `v0.4`       | 20km       |         yes            |      yes       |         -          |        3D         |
+| `v1.2`       | 6km        |         :x:            |      yes       |         -          |        2D         |
+| `v1.3`       | 6km        |         yes            |      :x:       |         -          |      waves        |
+| `v1.4`       | 6km        |         yes            |      yes       |         -          |        3D         |
+| `v2.2`       | 3km        |         :x:            |      yes       |         -          |        2D         |
+
+## Install
 first build the binaries: 
 ```
 cd v0.0
@@ -23,7 +40,7 @@ cd ..
 python scripts/mesh_v0.0.py
 ```
 
-## 2 - Reproduce
+## Mesh, model and/or export results
 By default, all 3 steps are activated, to deactivate meshing:
 
 change:
