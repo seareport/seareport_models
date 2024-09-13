@@ -9,17 +9,20 @@ Example: Using `scripts/model_v2.2.py`, you can produce this 3km global mesh and
 
 ## current meshes/models available
 
-| Mesh version | resolution | hole in the north pole | bathy gradient | other              | model application |
-|--------------|------------|------------------------|----------------|--------------------|-------------------|
-| `v0.0`       | 50km       |         :x:            |      yes       |         -          |        2D         |
-| `v0.1`       | 20km       |         :x:            |      yes       |         -          |        2D         |
-| `v0.2`       | 20km       |         :x:            |      yes       |  max depth at -20m |        2D         |
-| `v0.3`       | 20km       |         yes            |      :x:       |         -          |      waves        |
-| `v0.4`       | 20km       |         yes            |      yes       |         -          |        3D         |
-| `v1.2`       | 6km        |         :x:            |      yes       |         -          |        2D         |
-| `v1.3`       | 6km        |         yes            |      :x:       |         -          |      waves        |
-| `v1.4`       | 6km        |         yes            |      yes       |         -          |        3D         |
-| `v2.2`       | 3km        |         :x:            |      yes       |         -          |        2D         |
+| Mesh version | mesher used| resolution | hole in the north pole | bathy gradient | other              | model application |
+|--------------|------------|------------|------------------------|----------------|--------------------|-------------------|
+| `v0.0`       | oceanmesh  | 50km       |         :x:            |      yes       |         -          |        2D         |
+| `v0.1`       | oceanmesh  | 20km       |         :x:            |      yes       |         -          |        2D         |
+| `v0.2`       | oceanmesh  | 20km       |         :x:            |      yes       |  max depth at -20m |        2D         |
+| `v0.3`       | oceanmesh  | 20km       |         yes            |      :x:       |         -          |      waves        |
+| `v0.4`       | oceanmesh  | 20km       |         yes            |      yes       |         -          |        3D         |
+| `v1.2`       | oceanmesh  | 6km        |         :x:            |      yes       |         -          |        2D         |
+| `v1.3`       | oceanmesh  | 6km        |         yes            |      :x:       |         -          |      waves        |
+| `v1.4`       | oceanmesh  | 6km        |         yes            |      yes       |         -          |        3D         |
+| `v1.5`       | JIGSAW     | 6km        |         yes            |      yes       |         -          |        2D         |
+| `v2.2`       | oceanmesh  | 3km        |         :x:            |      yes       |         -          |        2D         |
+| `v2.3`       | JIGSAW     | 3km        |         :x:            |      yes       |         -          |        2D         |
+| `v3.1`       | JIGSAW     | 1km        |         :x:            |      yes       |         -          |        2D         |
 
 ## Install
 first build the binaries: 

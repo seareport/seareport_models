@@ -10,6 +10,7 @@ from pyposeidon.telemac import flip
 from pyposeidon.utils import data
 import pyposeidon.model as pm
 import pyposeidon.meteo as pmeteo
+import matplotlib.pyplot as plt
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -77,10 +78,7 @@ def get_meta() -> gp.GeoDataFrame:
         meta_api[["ioc_code", "lon", "lat"]].drop_duplicates(),
         on=["ioc_code"],
     )
-    updated = merged.assign(
-        geometry=gp.points_from_xy(merged.lon, merged.lat, crs="EPSG:4326")
-    )
-    return updated
+    return merged.drop(columns=["geometry"])
 
 
 def get_STOFS():
@@ -105,16 +103,16 @@ def get_STOFS():
 
 
 YEAR = 2023
-V = "v0.4"
+V = "v1.5"
 PROJECT = ""
 WIND = glob.glob(PROJECT + f"02_meteo/era5/lon_lat/netcdf/{YEAR}*.nc")
 WIND += glob.glob(PROJECT + f"02_meteo/era5/lon_lat/netcdf/{YEAR+1}*.nc")
 
 
-def main(mesh: bool = False, model: bool = True, results=False):
+def main(model: bool = True, results=False):
     # general meshing settings (oceanmesh settings below)
-    resolution = "i"
-    res_min = 0.2
+    resolution = "f"
+    res_min = 0.06
     res_max = 2
     cbuffer = res_min / 10
     # obs
@@ -156,18 +154,18 @@ def main(mesh: bool = False, model: bool = True, results=False):
         "rpath": rpath,
         # model
         "solver_name": "telemac",
-        "module": "telemac3d",
-        "start_date": f"{YEAR}-7-1 0:0:0",
-        "end_date": f"{YEAR}-7-2 0:0:0",
+        "module": "telemac2d",
+        "start_date": f"{YEAR}-1-1 0:0:0",
+        "end_date": f"{YEAR+1}-1-1 0:0:0",
         "meteo_input360": True,  # if meteo files longitudes go from from 0 to 360
         "meteo_source": None,  # path to meteo files
         # "meteo_gtype": "tri",  # for O1280 meshes
         "monitor": True,  # get time series for observation points
         # "obs": seaset_path,
         "update": ["dem"],
-        "fortran": "./scripts/fortran3D/", # can be a file or a folder
+        "fortran": "./scripts/temp_fortran/out_history.F90", # can be a file or a folder
         "parameters": {
-            "dt": 600,
+            "dt": 400,
             "chezy": 30,
             "rnday": 30,
             "hotout": 0,
@@ -179,15 +177,11 @@ def main(mesh: bool = False, model: bool = True, results=False):
     }
 
     # first step --- create mesh
-    mesh_file = rpath + f"/GSHHS_{resolution}_{res_min}_3D.gr3"
-    if mesh:
-        b = pm.set(**MODEL)
-        b.create()
-        b.mesh.to_file(mesh_file)
+    mesh_file = rpath + f"/jigsaw_{res_min}.gr3"
 
     # second step --- run model
     if model:
-        for solver in ["telemac"]:
+        for solver in ["schism", "telemac"]:
             rpath = f"{PROJECT}{V}/{solver}/{YEAR}"
             MODEL["mesh_file"] = mesh_file
             MODEL["rpath"] = rpath
@@ -200,16 +194,27 @@ def main(mesh: bool = False, model: bool = True, results=False):
             meteo = pmeteo.Meteo(ds)
             meteo.Dataset = meteo.Dataset.sel(
                 time=slice(MODEL["start_date"], MODEL["end_date"])
-            ).drop_vars(["valid_time"])
-            MODEL["meteo_source"] = meteo
+            )
+            # MODEL["meteo_source"] = meteo
             b = pm.set(**MODEL)
             b.create()
+            if solver == "telemac":
+                fix_mesh(b)
+            elif solver == "schism":
+                corr = {"reverse": [], "remove": []}  # this fix is for schism
+                fig, ax = plt.subplots()
+                x,y,tri = b.mesh.Dataset.SCHISM_hgrid_node_x.values, b.mesh.Dataset.SCHISM_hgrid_node_y.values, b.mesh.Dataset.SCHISM_hgrid_face_nodes.values
+                ax.triplot(x,y,tri, color='k', lw = 0.25)
+                ax.triplot(x,y,tri[121682-1:121682+1], color='r')
+                plt.show()
+                
+            else: 
+                raise ValueError(f"Unsupported solver: {solver}")
             b.output()
-            fix_mesh(b)
             b.mesh.to_file(f"{rpath}/hgrid.gr3")
             b.save()
             b.set_obs()
-            b.run()
+            # b.run()
 
     # third step --- extract results
     if results:
