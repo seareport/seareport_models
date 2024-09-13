@@ -162,7 +162,7 @@ def main(mesh: bool = True, model: bool = True, results=False):
         "monitor": True,  # get time series for observation points
         # "obs": seaset_path,
         "update": ["dem"],
-        "fortran": "./scripts/temp_fortran/out_history.F90", # can be a file or a folder
+        "fortran": "./scripts/fortran3D/", # can be a file or a folder
         "parameters": {
             "dt": 400,
             "chezy": 30,
