@@ -62,7 +62,23 @@ def fix_mesh(b, corrections=None):
     )
 
 
-def get_meta() -> gp.GeoDataFrame:
+def get_stofs2d_meta():
+    stofs2d = pd.read_csv(
+        "https://polar.ncep.noaa.gov/stofs/data/stofs_2d_glo_elev_stat_v2_1_0",
+        names=["coords", "name"],
+        sep="!",
+        header=None,
+        skiprows=1
+    )
+    stofs2d = stofs2d.assign(
+        lon=stofs2d.coords.str.split("\t", n=1).str[0].astype(float),
+        lat=stofs2d.coords.str.strip().str.rsplit("\t", n=1).str[1].astype(float),
+        stofs2d_name=stofs2d.name.str.strip(),
+    ).drop(columns=["coords", "name"])
+    return stofs2d
+
+
+def get_ioc_meta() -> gp.GeoDataFrame:
     meta_web = searvey.get_ioc_stations().drop(columns=["lon", "lat"])
     meta_api = (
         pd.read_json(
@@ -77,28 +93,13 @@ def get_meta() -> gp.GeoDataFrame:
         meta_api[["ioc_code", "lon", "lat"]].drop_duplicates(),
         on=["ioc_code"],
     )
-    return merged.drop(columns=["geometry"])
+    return merged
 
 
-def get_STOFS():
-    mycols = [str(i) for i in range(6)]  # we expect 17 cols max in that file
-    stof2d = pd.read_csv(
-        "https://polar.ncep.noaa.gov/stofs/data/stofs_2d_glo_elev_stat_v2_1_0",
-        names=mycols,
-        sep="\t+|!",
-        header=None,
-        skiprows=1,
-    )
-    stof2d["Info"] = stof2d.apply(lambda row: " ".join(filter(None, row[2:])), axis=1)
-    stof2d["ID"] = stof2d["Info"].apply(lambda x: " ".join(x.split()[:3]))
-    stof2d["Info"] = stof2d.apply(
-        lambda row: row["Info"].replace(row["ID"], "").strip(), axis=1
-    )
-    stof2d = stof2d.drop(columns=["2", "3", "4", "5"])
-    stof2d.rename(columns={"0": "lon", "1": "lat"}, inplace=True)
-    stof2d["is_satellite"] = stof2d.apply(lambda row: "SA" in row["ID"], axis=1)
-    stof2d["is_ioc"] = False
-    return stof2d
+def merge_ioc_and_stofs(ioc: pd.DataFrame, stofs2d: pd.DataFrame) -> pd.DataFrame:
+    stations = pd.concat((ioc, stofs2d), ignore_index=True)
+    stations = stations.assign(unique_id=stations.ioc_code.combine_first(stations.stofs2d_name))
+    return stations
 
 
 YEAR = 2023
@@ -116,15 +117,9 @@ def main(model: bool = True, results=False):
     cbuffer = res_min / 10
     # obs
     obs_path = PROJECT + f"{V}/ioc_stofs.csv"
-    ioc_ = get_meta()
-    ioc_["is_ioc"] = True
-    ioc_["is_satellite"] = False
-    stof2d = get_STOFS()
-    m = pd.merge(stof2d, ioc_, on=["lon", "lat"], how="outer")
-    m["is_ioc"] = m["is_ioc_x"].fillna(m["is_ioc_y"])
-    m["is_satellite"] = m["is_satellite_x"].fillna(m["is_satellite_y"])
-    m = m.drop(columns=["is_ioc_x", "is_ioc_y", "is_satellite_x", "is_satellite_y"])
-    m["id"] = m["ID"].fillna(m["ioc_code"])
+    ioc = get_ioc_meta()
+    stofs2d = get_stofs2d_meta()
+    m = merge_ioc_and_stofs(ioc=ioc, stofs2d=stofs2d)
     m.to_csv(obs_path)
     # Folders and files for mesh generation
     gshhs_folder = PROJECT + "01_coastlines/gshhs/out/"
@@ -212,6 +207,7 @@ def main(model: bool = True, results=False):
             os.makedirs(MODEL["rpath"], exist_ok=True)
             MODEL["solver_name"] = solver
             MODEL["result_type"] = "2D"
+            MODEL["id_str"] = "unique_id"
             MODEL["convert_results"] = False
             MODEL["extract_TS"] = True
             folders = glob.glob(f"{PROJECT}{V}/{solver}/{YEAR}")

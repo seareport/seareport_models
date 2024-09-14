@@ -62,7 +62,23 @@ def fix_mesh(b, corrections=None):
     )
 
 
-def get_meta() -> gp.GeoDataFrame:
+def get_stofs2d_meta():
+    stofs2d = pd.read_csv(
+        "https://polar.ncep.noaa.gov/stofs/data/stofs_2d_glo_elev_stat_v2_1_0",
+        names=["coords", "name"],
+        sep="!",
+        header=None,
+        skiprows=1
+    )
+    stofs2d = stofs2d.assign(
+        lon=stofs2d.coords.str.split("\t", n=1).str[0].astype(float),
+        lat=stofs2d.coords.str.strip().str.rsplit("\t", n=1).str[1].astype(float),
+        stofs2d_name=stofs2d.name.str.strip(),
+    ).drop(columns=["coords", "name"])
+    return stofs2d
+
+
+def get_ioc_meta() -> gp.GeoDataFrame:
     meta_web = searvey.get_ioc_stations().drop(columns=["lon", "lat"])
     meta_api = (
         pd.read_json(
@@ -77,24 +93,17 @@ def get_meta() -> gp.GeoDataFrame:
         meta_api[["ioc_code", "lon", "lat"]].drop_duplicates(),
         on=["ioc_code"],
     )
-    return merged.drop(columns=["geometry"])
+    return merged
 
 
-def ioc_subset_from_files_in_folder(
-    df: pd.DataFrame, folder: str, ext: str = ".parquet"
-):
-    """this function return a subset of the ioc database from all the files (json or parquet)
-    present in a folder
-    """
-    list_files = []
-    for file in os.listdir(folder):
-        name = file.split(ext)[0]
-        if file.endswith(ext):
-            list_files.append(name)
-    return df[df.ioc_code.isin(list_files)]
+def merge_ioc_and_stofs(ioc: pd.DataFrame, stofs2d: pd.DataFrame) -> pd.DataFrame:
+    stations = pd.concat((ioc, stofs2d), ignore_index=True)
+    stations = stations.assign(unique_id=stations.ioc_code.combine_first(stations.stofs2d_name))
+    return stations
 
 
-YEAR = 2023
+YEAR = 2022
+V = "v0.3"
 PROJECT = ""
 WIND = glob.glob(PROJECT + f"02_meteo/era5/lon_lat/netcdf/{YEAR}*.nc")
 WIND += glob.glob(PROJECT + f"02_meteo/era5/lon_lat/netcdf/{YEAR+1}*.nc")
@@ -107,16 +116,17 @@ def main(mesh: bool = False, model: bool = True, results=False):
     res_max = 2
     cbuffer = res_min / 10
     # obs
-    obs_path = "v0.3/ioc_.csv"
-    ioc_ = get_meta()
-    ioc_cleanup = ioc_subset_from_files_in_folder(ioc_, "../ioc_cleanup/clean/")
-    ioc_cleanup.to_csv(obs_path)
+    obs_path = PROJECT + f"{V}/ioc_stofs.csv"
+    ioc = get_ioc_meta()
+    stofs2d = get_stofs2d_meta()
+    m = merge_ioc_and_stofs(ioc=ioc, stofs2d=stofs2d)
+    m.to_csv(obs_path)
     # Folders and files for mesh generation
-    gshhs_folder = "../coastlines/out/"
-    fdem = "00_bathy/etopo/ETOPO_0.03.nc"
+    gshhs_folder = PROJECT + "01_coastlines/gshhs/out/"
+    fdem = PROJECT + "00_bathy/etopo/ETOPO_0.03.nc"
     coasts = gp.read_parquet(gshhs_folder + f"gshhg_{resolution}.parquet")
     #
-    rpath = "v0.3"
+    rpath = PROJECT + f"{V}"
     MODEL = {
         # "type": "tri2d",
         "coastlines": coasts,
@@ -200,6 +210,7 @@ def main(mesh: bool = False, model: bool = True, results=False):
             os.makedirs(MODEL["rpath"], exist_ok=True)
             MODEL["solver_name"] = solver
             MODEL["result_type"] = "2D"
+            MODEL["id_str"] = "unique_id"
             MODEL["convert_results"] = False
             MODEL["extract_TS"] = True
             folders = glob.glob(f"{PROJECT}{V}/{solver}/{YEAR}")
