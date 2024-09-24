@@ -14,7 +14,7 @@ Example: Using `scripts/model_v2.2.py`, you can produce this 3km global mesh and
 | `v0.0`       | oceanmesh  | 50km       |         :x:            |      yes       |         -          |        2D         |
 | `v0.1`       | oceanmesh  | 20km       |         :x:            |      yes       |         -          |        2D         |
 | `v0.2`       | oceanmesh  | 20km       |         :x:            |      yes       |  max depth at -20m |        2D         |
-| `v0.3`       | oceanmesh  | 20km       |         yes            |      :x:       |         -          |      waves        |
+| `v0.3`       | oceanmesh  | 30km       |         yes            |      :x:       |         -          |      waves        |
 | `v0.4`       | oceanmesh  | 20km       |         yes            |      yes       |         -          |        3D         |
 | `v1.2`       | oceanmesh  | 6km        |         :x:            |      yes       |         -          |        2D         |
 | `v1.3`       | oceanmesh  | 6km        |         yes            |      :x:       |         -          |      waves        |
@@ -22,6 +22,7 @@ Example: Using `scripts/model_v2.2.py`, you can produce this 3km global mesh and
 | `v1.5`       | JIGSAW     | 6km        |         yes            |      yes       |         -          |        2D         |
 | `v2.2`       | oceanmesh  | 3km        |         :x:            |      yes       |         -          |        2D         |
 | `v2.3`       | JIGSAW     | 3km        |         :x:            |      yes       |         -          |        2D         |
+| `v3.0`       | JIGSAW     | 2km        |         :x:            |      yes       |         -          |        2D         |
 | `v3.1`       | JIGSAW     | 1km        |         :x:            |      yes       |         -          |        2D         |
 
 ## Install

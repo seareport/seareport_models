@@ -98,7 +98,7 @@ def get_ioc_meta() -> gp.GeoDataFrame:
 
 def merge_ioc_and_stofs(ioc: pd.DataFrame, stofs2d: pd.DataFrame) -> pd.DataFrame:
     stations = pd.concat((ioc, stofs2d), ignore_index=True)
-    stations = stations.assign(unique_id=stations.ioc_code.combine_first(stations.stofs2d_name))
+    stations = stations.assign(id=stations.ioc_code.combine_first(stations.stofs2d_name))
     return stations
 
 
