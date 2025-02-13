@@ -9,22 +9,22 @@ Example: Using `scripts/model_v2.2.py`, you can produce this 3km global mesh and
 
 ## current meshes/models available
 
-| Mesh version | mesher used| resolution | hole in the north pole | bathy gradient | other              | model application |
-|--------------|------------|------------|------------------------|----------------|--------------------|-------------------|
-| `v0.0`       | oceanmesh  | 50km       |         :x:            |      yes       |         -          |        2D         |
-| `v0.1`       | oceanmesh  | 20km       |         :x:            |      yes       |         -          |        2D         |
-| `v0.2`       | oceanmesh  | 20km       |         :x:            |      yes       |  max depth at -20m |        2D         |
-| `v0.3`       | oceanmesh  | 30km       |         yes            |      :x:       |         -          |      waves        |
-| `v0.4`       | oceanmesh  | 20km       |         yes            |      yes       |         -          |        3D         |
-| `v1.2`       | oceanmesh  | 6km        |         :x:            |      yes       |         -          |        2D         |
-| `v1.3`       | oceanmesh  | 6km        |         yes            |      :x:       |         -          |      waves        |
-| `v1.4`       | oceanmesh  | 6km        |         yes            |      yes       |         -          |        3D         |
-| `v1.5`       | JIGSAW     | 6km        |         yes            |      yes       |         -          |        2D         |
-| `v2.2`       | oceanmesh  | 3km        |         :x:            |      yes       |         -          |        2D         |
-| `v2.3`       | JIGSAW     | 3km        |         :x:            |      yes       |         -          |        2D         |
-| `v3.0`       | JIGSAW     | 2km        |         :x:            |      yes       |         -          |        2D         |
-| `v3.1`       | JIGSAW     | 1km        |         :x:            |      yes       |         -          |        2D         |
-| `v3.2`       | oceanmesh  | 1km        |         :x:            |      yes       |         -          |        2D         |
+| Mesh version | mesher used| resolution | hole in the north pole | bathy gradient | other              | model application | solver supported | Number of nodes | Number of elements |
+|--------------|------------|------------|------------------------|----------------|--------------------|-------------------|------------------|-----------------|--------------------|
+| `v0.0`       | oceanmesh  | 50km       |         :x:            |      yes       |         -          |        2D         | SCHISM/TELEMAC2D |      84,689     |     164,735        |
+| `v0.1`       | oceanmesh  | 20km       |         :x:            |      yes       |         -          |        2D         | SCHISM/TELEMAC2D |     365,494     |     716,158        |
+| `v0.2`       | oceanmesh  | 20km       |         :x:            |      yes       |  max depth at -20m |        2D         | SCHISM/TELEMAC2D |     365,494     |     716,158        |
+| `v0.3`       | oceanmesh  | 30km       |         yes            |      :x:       |         -          |      waves        | TELEMAC-TOMAWAC  |      77,669     |     146,413        |
+| `v0.4`       | oceanmesh  | 20km       |         yes            |      yes       |         -          |        3D         |  TELEMAC3D       |     369,029     |     723,382        |
+| `v1.2`       | oceanmesh  | 6km        |         :x:            |      yes       |         -          |        2D         |  SCHISM/TELEMAC  |   1,613,172     |   3,154,713        |
+| `v1.3`       | oceanmesh  | 6km        |         yes            |      :x:       |         -          |      waves        | TELEMAC-TOMAWAC  |     591,858     |   1,114,831        |
+| `v1.4`       | oceanmesh  | 6km        |         yes            |      yes       |         -          |        3D         |  TELEMAC3D       |   1,538,748     |   3,006,764        |
+| `v1.5`       | JIGSAW     | 6km        |         yes            |      yes       |         -          |        2D         | SCHISM/TELEMAC2D |   1,657,207     |   3,247,598        |
+| `v2.2`       | oceanmesh  | 3km        |         :x:            |      yes       |         -          |        2D         | SCHISM/TELEMAC2D |   3,028,101     |   5,887,129        |
+| `v2.3`       | JIGSAW     | 3km        |         :x:            |      yes       |         -          |        2D         |  TELEMAC2D       |   2,827,515     |   5,464,377        |
+| `v3.0`       | JIGSAW     | 2km        |         :x:            |      yes       |         -          |        2D         |  TELEMAC2D       |   4,208,101     |   8,096,114        |
+| `v3.1`       | JIGSAW     | 1km        |         :x:            |      yes       |         -          |        2D         |  TELEMAC2D       |   7,304,154     |  13,873,525        |
+| `v3.2`       | oceanmesh  | 1km        |         :x:            |      yes       |         -          |        2D         | SCHISM/TELEMAC2D |   7,990,779     |  15,312,900        |
 
 ## Install
 first build the binaries: 
