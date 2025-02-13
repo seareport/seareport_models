@@ -24,6 +24,7 @@ Example: Using `scripts/model_v2.2.py`, you can produce this 3km global mesh and
 | `v2.3`       | JIGSAW     | 3km        |         :x:            |      yes       |         -          |        2D         |
 | `v3.0`       | JIGSAW     | 2km        |         :x:            |      yes       |         -          |        2D         |
 | `v3.1`       | JIGSAW     | 1km        |         :x:            |      yes       |         -          |        2D         |
+| `v3.2`       | oceanmesh  | 1km        |         :x:            |      yes       |         -          |        2D         |
 
 ## Install
 first build the binaries: 
