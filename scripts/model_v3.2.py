@@ -232,9 +232,9 @@ def main(mesh: bool = False, model: bool = True, results=False):
             MODEL["meteo_source"] = meteo
             b = pm.set(**MODEL)
             b.create()
-            b.output()
             fix_mesh(b, solver)
             apply_transformations(b.mesh, f"{PROJECT}{V}/GSHHS_f_0.01_patch.json" )
+            b.output()
             b.mesh.to_file(f"{rpath}/hgrid.gr3")
             b.save()
             # b.set_obs()
