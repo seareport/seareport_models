@@ -192,9 +192,9 @@ def main(model: bool = True, results=False):
             # MODEL["meteo_source"] = meteo
             b = pm.set(**MODEL)
             b.create()
-            b.output()
             if solver == "telemac":
-                fix_mesh(b)
+                b.mesh.Dataset.SCHISM_hgrid_node_y[3659873] = 90
+            b.output()
             b.mesh.to_file(f"{rpath}/hgrid.gr3")
             b.save()
             b.set_obs()
