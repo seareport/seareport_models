@@ -11,6 +11,8 @@ from pyposeidon.utils import data
 import pyposeidon.model as pm
 import pyposeidon.meteo as pmeteo
 
+import seareport_data as D
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -102,13 +104,13 @@ def main(mesh: bool = True, model: bool = True, results=True):
     cbuffer = res_min / 10
     # obs
     obs_path = "v0.0/ioc_.csv"
-    ioc_ = get_meta()
-    ioc_cleanup = ioc_subset_from_files_in_folder(ioc_, "../ioc_cleanup/clean/")
+    ioc_cleanup = pd.read_csv("https://raw.githubusercontent.com/tomsail/static/refs/heads/master/assets/ioc_cleanup_2024.csv", index_col = 0)
     ioc_cleanup.to_csv(obs_path)
     # Folders and files for mesh generation
-    gshhs_folder = "../coastlines/out/"
-    fdem = "00_bathy/etopo/ETOPO_0.03.nc"
-    coasts = gp.read_parquet(gshhs_folder + f"gshhg_{resolution}_nosea.parquet")
+    fdem = D.etopo(dataset="surface", resolution="30sec")
+    # WIP: DEM won't work because of https://github.com/seareport/seareport_data/issues/16
+    # use directly the links in https://github.com/seareport/seareport_data/blob/master/seareport_data/registry.json
+    coasts = D.gshhg_df("h",shoreline="5")
     #
     rpath = "v0.0"
 
